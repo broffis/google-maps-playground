@@ -13,6 +13,7 @@ type GoogleMapTypeId = google.maps.MapTypeId;
 type GoogleMap = google.maps.Map;
 type GoogleMarker = google.maps.Marker;
 type GooglePolyLine = google.maps.Polyline;
+type GoogleEventListener = google.maps.MapsEventListener;
 
 interface IMap {
   mapType: GoogleMapTypeId;
@@ -26,8 +27,6 @@ interface IMarker {
   longitude: number;
 }
 
-let lastLine: GooglePolyLine;
-
 export const Map: FunctionComponent<IMap> = ({
   mapType,
   mapTypeControl = false,
@@ -38,7 +37,10 @@ export const Map: FunctionComponent<IMap> = ({
   const [marker, setMarker] = useState<IMarker>();
   const [homeMarker, setHomeMarker] = useState<GoogleMarker>();
   const [googleMarkers, setGoogleMarkers] = useState<GoogleMarker[]>([]);
-  // const [lastLine, setLastLine] = useState<GooglePolyLine>();
+  const [lastLine, setLastLine] = useState<GooglePolyLine>();
+  const [listenerIdArray, setListenerIdArray] = useState<GoogleEventListener[]>(
+    []
+  );
 
   const startMap = (): void => {
     const homeLocation = new google.maps.LatLng(35.22, -80.843);
@@ -89,6 +91,24 @@ export const Map: FunctionComponent<IMap> = ({
     );
   };
 
+  useEffect(() => {
+    // Remove all event listeners
+    listenerIdArray.forEach((listenerId) => {
+      google.maps.event.removeListener(listenerId);
+    });
+
+    setListenerIdArray([]);
+    setGoogleMarkers([]);
+    // Add event listeners again
+    googleMarkers.forEach((googleMarker) => {
+      const markerPosition = googleMarker.getPosition();
+      if (markerPosition) {
+        addMarker(markerPosition);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastLine]);
+
   const addMarker = (location: GoogleLatLng): void => {
     const mapMarker: GoogleMarker = new google.maps.Marker({
       position: location,
@@ -98,7 +118,7 @@ export const Map: FunctionComponent<IMap> = ({
 
     setGoogleMarkers([...googleMarkers, mapMarker]);
 
-    mapMarker.addListener("click", () => {
+    const listenerId = mapMarker.addListener("click", () => {
       const homePos = homeMarker?.getPosition();
       const markerPos = mapMarker.getPosition();
 
@@ -115,7 +135,7 @@ export const Map: FunctionComponent<IMap> = ({
           lastLine.setMap(null);
         }
 
-        lastLine = new google.maps.Polyline({
+        const line = new google.maps.Polyline({
           path: [
             { lat: homePos.lat(), lng: homePos.lng() },
             { lat: markerPos.lat(), lng: markerPos.lng() },
@@ -129,8 +149,12 @@ export const Map: FunctionComponent<IMap> = ({
           ],
           map,
         });
+
+        setLastLine(line);
       }
     });
+
+    setListenerIdArray([...listenerIdArray, listenerId]);
   };
 
   const addHomeMarker = (location: GoogleLatLng): GoogleMarker => {
