@@ -1,0 +1,17 @@
+.distance-info {
+  margin: 1rem;
+  padding: 1rem;
+  font-size: 1.5rem;
+  background: #7fdbff;
+  border-radius: 1rem;
+  width: 100%;
+  text-align: center;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 75vw;
+  margin: 0 auto;
+}

@@ -12,6 +12,7 @@ type GoogleLatLng = google.maps.LatLng;
 type GoogleMapTypeId = google.maps.MapTypeId;
 type GoogleMap = google.maps.Map;
 type GoogleMarker = google.maps.Marker;
+type GooglePolyLine = google.maps.Polyline;
 
 interface IMap {
   mapType: GoogleMapTypeId;
@@ -25,6 +26,8 @@ interface IMarker {
   longitude: number;
 }
 
+let lastLine: GooglePolyLine;
+
 export const Map: FunctionComponent<IMap> = ({
   mapType,
   mapTypeControl = false,
@@ -35,6 +38,7 @@ export const Map: FunctionComponent<IMap> = ({
   const [marker, setMarker] = useState<IMarker>();
   const [homeMarker, setHomeMarker] = useState<GoogleMarker>();
   const [googleMarkers, setGoogleMarkers] = useState<GoogleMarker[]>([]);
+  // const [lastLine, setLastLine] = useState<GooglePolyLine>();
 
   const startMap = (): void => {
     const homeLocation = new google.maps.LatLng(35.22, -80.843);
@@ -105,8 +109,26 @@ export const Map: FunctionComponent<IMap> = ({
             markerPos
           );
 
-        console.log(distanceInMeters);
         setDistanceKm(Math.ceil(distanceInMeters / 1000));
+
+        if (lastLine) {
+          lastLine.setMap(null);
+        }
+
+        lastLine = new google.maps.Polyline({
+          path: [
+            { lat: homePos.lat(), lng: homePos.lng() },
+            { lat: markerPos.lat(), lng: markerPos.lng() },
+          ],
+          icons: [
+            {
+              icon: {
+                path: google.maps.SymbolPath.FORWARD_OPEN_ARROW,
+              },
+            },
+          ],
+          map,
+        });
       }
     });
   };
@@ -117,6 +139,7 @@ export const Map: FunctionComponent<IMap> = ({
       map: map,
       icon: {
         url: window.location.origin + "/assets/images/homeAddressMarker.png",
+        anchor: new google.maps.Point(25, 25),
       },
     });
 
@@ -136,7 +159,7 @@ export const Map: FunctionComponent<IMap> = ({
       fillOpacity: 0.8,
       strokeColor: "pink",
       strokeWeight: 2,
-      anchor: new google.maps.Point(30, 50),
+      anchor: new google.maps.Point(27, 52),
       // scale: 1,
     };
   };

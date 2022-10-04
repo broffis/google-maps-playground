@@ -2,6 +2,7 @@
   align-items: center;
   display: flex;
   justify-content: center;
+  padding: 1rem;
 }
 
 .map-container__map {
