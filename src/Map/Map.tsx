@@ -25,6 +25,7 @@ export const Map: FunctionComponent<IMap> = ({
   const [map, setMap] = useState<GoogleMap>();
   const [marker, setMarker] = useState<IMarker>();
   const [homeMarker, setHomeMarker] = useState<GoogleMarker>();
+  const [googleMarkers, setGoogleMarkers] = useState<GoogleMarker[]>([]);
 
   const startMap = (): void => {
     const homeLocation = new google.maps.LatLng(35.22, -80.843);
@@ -42,7 +43,6 @@ export const Map: FunctionComponent<IMap> = ({
   useEffect(startMap, [map]);
 
   const defaultMapStart = (defaultLocation: GoogleLatLng): void => {
-    // TODO: initmap
     initMap(10, defaultLocation);
   };
 
@@ -76,12 +76,6 @@ export const Map: FunctionComponent<IMap> = ({
     );
   };
 
-  const addSingleMarker = (): void => {
-    if (marker) {
-      addMarker(new google.maps.LatLng(marker.latitude, marker.longitude));
-    }
-  };
-
   const addMarker = (location: GoogleLatLng): void => {
     const mapMarker: GoogleMarker = new google.maps.Marker({
       position: location,
@@ -89,9 +83,21 @@ export const Map: FunctionComponent<IMap> = ({
       icon: getIconAttributes("#000000"),
     });
 
+    setGoogleMarkers([...googleMarkers, mapMarker]);
+
     mapMarker.addListener("click", () => {
-      map?.panTo(location);
-      map?.setZoom(15);
+      const homePos = homeMarker?.getPosition();
+      const markerPos = mapMarker.getPosition();
+
+      if (homePos && markerPos) {
+        const distanceInMeters =
+          google.maps.geometry.spherical.computeDistanceBetween(
+            homePos,
+            markerPos
+          );
+
+        console.log(distanceInMeters);
+      }
     });
   };
 
@@ -125,7 +131,12 @@ export const Map: FunctionComponent<IMap> = ({
     };
   };
 
-  useEffect(addSingleMarker, [marker, addSingleMarker]);
+  useEffect(() => {
+    if (marker) {
+      addMarker(new google.maps.LatLng(marker.latitude, marker.longitude));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marker]);
 
   const initMap = (zoomLevel: number, address: GoogleLatLng): void => {
     if (ref.current) {
