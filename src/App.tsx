@@ -1,24 +1,22 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import "./App.css";
+import { Map } from "./Map/Map";
+import { loadMapApi } from "./utils/GoogleMapsUtils";
 
 function App() {
+  const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    const googleMapScript = loadMapApi();
+    googleMapScript.addEventListener("load", () => {
+      setScriptLoaded(true);
+    });
+  }, []);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {scriptLoaded && (
+        <Map mapType={google.maps.MapTypeId.ROADMAP} mapTypeControl={true} />
+      )}
     </div>
   );
 }
