@@ -4,7 +4,7 @@ import "./map.css";
 type GoogleLatLng = google.maps.LatLng;
 type GoogleMapTypeId = google.maps.MapTypeId;
 type GoogleMap = google.maps.Map;
-type GoogleMapsMarker = google.maps.Marker;
+type GoogleMarker = google.maps.Marker;
 
 interface IMap {
   mapType: GoogleMapTypeId;
@@ -24,20 +24,26 @@ export const Map: FunctionComponent<IMap> = ({
   const ref = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<GoogleMap>();
   const [marker, setMarker] = useState<IMarker>();
+  const [homeMarker, setHomeMarker] = useState<GoogleMarker>();
 
   const startMap = (): void => {
+    const homeLocation = new google.maps.LatLng(35.22, -80.843);
+
     if (!map) {
       // TODO
-      defaultMapStart();
+
+      defaultMapStart(homeLocation);
+    } else {
+      const homeMarkerFromInit = addHomeMarker(homeLocation);
+      setHomeMarker(homeMarkerFromInit);
     }
   };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(startMap, [map]);
 
-  const defaultMapStart = (): void => {
-    const defaultAddress = new google.maps.LatLng(35.22, -80.843);
+  const defaultMapStart = (defaultLocation: GoogleLatLng): void => {
     // TODO: initmap
-    initMap(10, defaultAddress);
+    initMap(10, defaultLocation);
   };
 
   const initEventListener = (): void => {
@@ -77,22 +83,45 @@ export const Map: FunctionComponent<IMap> = ({
   };
 
   const addMarker = (location: GoogleLatLng): void => {
-    const mapMarker: GoogleMapsMarker = new google.maps.Marker({
+    const mapMarker: GoogleMarker = new google.maps.Marker({
       position: location,
       map: map,
       icon: getIconAttributes("#000000"),
     });
+
+    mapMarker.addListener("click", () => {
+      map?.panTo(location);
+      map?.setZoom(15);
+    });
+  };
+
+  const addHomeMarker = (location: GoogleLatLng): GoogleMarker => {
+    const homeMarkerConst: GoogleMarker = new google.maps.Marker({
+      position: location,
+      map: map,
+      icon: {
+        url: window.location.origin + "/assets/images/homeAddressMarker.png",
+      },
+    });
+
+    homeMarkerConst.addListener("click", () => {
+      map?.panTo(location);
+      map?.setZoom(10);
+    });
+
+    return homeMarkerConst;
   };
 
   const getIconAttributes = (iconColor: string) => {
     return {
-      path: google.maps.SymbolPath.CIRCLE,
+      // path: google.maps.SymbolPath.CIRCLE,
+      path: "M11.0639 15.3003L26.3642 2.47559e-05L41.6646 15.3003L26.3638 51.3639L11.0639 15.3003 M22,17.5a4.5,4.5 0 1,0 9,0a4.5,4.5 0 1,0 -9,0Z",
       fillColor: iconColor,
       fillOpacity: 0.8,
       strokeColor: "pink",
       strokeWeight: 2,
-      // anchor: new google.maps.Point(30, 50),
-      scale: 4,
+      anchor: new google.maps.Point(30, 50),
+      // scale: 1,
     };
   };
 
