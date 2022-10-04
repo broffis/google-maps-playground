@@ -5,6 +5,7 @@ import { loadMapApi } from "./utils/GoogleMapsUtils";
 
 function App() {
   const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
+  const [distanceKm, setDistanceKm] = useState<number>(-1);
 
   useEffect(() => {
     const googleMapScript = loadMapApi();
@@ -12,11 +13,20 @@ function App() {
       setScriptLoaded(true);
     });
   }, []);
+
+  const renderDistanceSentence = () => {
+    return `Distance between selected marker and home is ${distanceKm} km`;
+  };
   return (
     <div className="App">
       {scriptLoaded && (
-        <Map mapType={google.maps.MapTypeId.ROADMAP} mapTypeControl={true} />
+        <Map
+          mapType={google.maps.MapTypeId.ROADMAP}
+          mapTypeControl={true}
+          setDistanceKm={setDistanceKm}
+        />
       )}
+      {distanceKm > -1 && renderDistanceSentence()}
     </div>
   );
 }

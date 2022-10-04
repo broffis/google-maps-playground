@@ -1,4 +1,11 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  FunctionComponent,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import "./map.css";
 
 type GoogleLatLng = google.maps.LatLng;
@@ -9,6 +16,7 @@ type GoogleMarker = google.maps.Marker;
 interface IMap {
   mapType: GoogleMapTypeId;
   mapTypeControl?: boolean;
+  setDistanceKm: Dispatch<SetStateAction<number>>;
 }
 
 interface IMarker {
@@ -20,6 +28,7 @@ interface IMarker {
 export const Map: FunctionComponent<IMap> = ({
   mapType,
   mapTypeControl = false,
+  setDistanceKm,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<GoogleMap>();
@@ -97,6 +106,7 @@ export const Map: FunctionComponent<IMap> = ({
           );
 
         console.log(distanceInMeters);
+        setDistanceKm(Math.ceil(distanceInMeters / 1000));
       }
     });
   };
